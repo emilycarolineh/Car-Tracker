@@ -1,0 +1,25 @@
+Emily Higgs
+Documentation for Car Tracker
+
+
+Justification of multiple PQs for all cars:
+
+Each priority queue in my implementation deals with a different priority, either mileage or price. I split up these priority queues for both ease of engineering and for efficiency in retrieval operations. Storing all the data in one priority queue might be possible, but it would take considerably more work to sort by two factors. The CarPriorityQueue class contains methods that distinguish which priority they act on based upon the 'priority' field (represented as either 'p' for price or 'm' for mileage). Operations meant to maintain the heap property (sink and swim) have two different variations to account for differing priority. 
+
+
+
+Justification of use of DLB for indirection data structure:
+
+In order for operations such as remove to be efficient in an indexable PQ, the data structure that maps VINs to indices must have a constant search and insert time. The data structure I ultimately chose was a DLB trie. A B-tree has operations that all have a worst case of logn- too slow to satisfy the constant search and insert time. Hashing has a worst case runtime of O(n), far too slow. Both hashing and b-trees would require transforming the VIN into a numeric representation; in hashing, this would be the generation of hash values, and in a b-tree, these values would be used to distribute car entries throughout the tree, allowing for efficient search and insert. This value generation would require an additional layer of complexity. R-way tries have an insert operation that is always O(w), where w is the number of digits in the key, or 17 in the case of the VIN numbers. This is constant, so it would not be so bad if not for the space wasted. R-way tries are well-suited for dense distributions of data, but the number of cars entered into this program is be an extremely small fraction of the number of possible VIN numbers (R^w = 33^17 = 6.52e25). A radix search trie (RST) would also waste considerable space in terms of empty nodes. As such, I employed a DLB trie, more suited to sparse data and wasting much less space. The worst-case time of wR will only be reached in cases of extremely dense distribution, and in all other cases, the runtime will be satisfactorily constant. 
+
+
+Justification of the make/model PQ arrays:
+
+In order to achieve logarithmic runtime in the retrieve operations on certain makes and models, using the priority queues that account for all cars wasn't an option. Using one of the global PQs allotted for all cars for operations on makes/models has a chance to devolve into linear or linearithmic runtime, as you might have to remove every minimum element until the last, if none of those cars have the make/model combination you desire. While maintaining separate priority queues for each make/model combination involves a lot more engineering effort, it is an effective way of guaranteeing a logarithmic runtime. I thought these best stored in an array because indexing into an array is constant time. Using arrays meant that I also had to resize them as they filled up, much like with the array-backed heaps. 
+
+
+
+Justification of the use of DLB for PQ-array lookup:
+
+When handling the priority queues of make/model combinations, it is necessary for multiple operations to seek out the priority queue to which the make/model belongs. As I stored make/model PQs in an array, this meant I needed a way to find the index of the PQ I sought, and in order to fulfill assignment time requirements, I had to do this in logarithmic time. Since I had already chosen a DLB trie for my indirection data structure, I already had a data structure at my disposal with a respectable runtime not exceeding logn. This time, I added make/model string to the DLB, combining the two fields into a single run with a period (.) between them instead of VIN numbers. I only needed to add one method on top of the DLB class I had programmed for the indirection structure- lookupSearch(), and this method was very similar to the existing search() method. This had to be done to return the index of the make/model PQ, and I probably could have even modified the search() method, but I chose not to for the sake of preserving the code I had already written with it as it was.
+	
